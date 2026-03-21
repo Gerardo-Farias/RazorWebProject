@@ -1,0 +1,53 @@
+﻿@page "/exchange"
+@rendermode InteractiveServer
+
+<h3>Cambio de moneda</h3>
+
+<div class="mb-3">
+    <label>Pesos</label>
+    <input type="number" class="form-control" @bind="pesos" min="0" />
+</div>
+
+<button class="btn btn-primary mb-3" @onclick="CalcularCambio">
+    Convertir
+</button>
+
+<div class="mb-2">
+    <label>Dólares</label>
+    <input class="form-control" value="@dolares" disabled />
+</div>
+
+<div class="mb-2">
+    <label>Euros</label>
+    <input class="form-control" value="@euros" disabled />
+</div>
+
+<div class="mb-2">
+    <label>Libras</label>
+    <input class="form-control" value="@libras" disabled />
+</div>
+
+@code {
+    private decimal pesos = 0;
+
+    private decimal dolares = 0;
+    private decimal euros = 0;
+    private decimal libras = 0;
+
+    private decimal tipoDolar = 0.0560m;
+    private decimal tipoEuro = 0.0518m;
+    private decimal tipoLibra = 0.0444m;
+
+    private void CalcularCambio()
+    {
+        if (pesos <= 0)
+        {
+            dolares = euros = libras = 0;
+            return;
+        }
+
+        dolares = Math.Round(pesos * tipoDolar, 2);
+        euros = Math.Round(pesos * tipoEuro, 2);
+        libras = Math.Round(pesos * tipoLibra, 2);
+    }
+}

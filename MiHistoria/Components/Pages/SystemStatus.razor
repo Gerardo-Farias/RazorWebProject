@@ -1,0 +1,40 @@
+﻿@code {
+    [Parameter]
+    public int StatusCode { get; set; }
+
+    private string mensaje = "";
+    private string claseCss = "";
+
+    protected override void OnParametersSet()
+    {
+        if (StatusCode == 200)
+        {
+            mensaje = "Sistema Operacional";
+            claseCss = "estado-verde";
+        }
+        else if (StatusCode == 404)
+        {
+            mensaje = "Recurso No Encontrado";
+            claseCss = "estado-amarillo";
+        }
+        else if (StatusCode == 500)
+        {
+            mensaje = "Error Interno del Servidor";
+            claseCss = "estado-rojo";
+        }
+        else
+        {
+            mensaje = "Estado Desconocido";
+            claseCss = "estado-gris";
+        }
+    }
+}
+
+<div class="estado-container">
+    <span class="estado-indicador @claseCss"></span>
+    
+    <div>
+        <div><strong>Código:</strong> @StatusCode</div>
+        <div><strong>Estado:</strong> @mensaje</div>
+    </div>
+</div>

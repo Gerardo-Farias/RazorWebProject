@@ -58,3 +58,41 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Colores para el sistem status */
+/* Contenedor general */
+.estado-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-top: 10px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Círculo indicador */
+.estado-indicador {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Colores refinados */
+.estado-verde {
+    background-color: #28a745; /* verde agradable */
+}
+
+.estado-amarillo {
+    background-color: #ffc107; /* amarillo elegante */
+}
+
+.estado-rojo {
+    background-color: #dc3545; /* rojo bootstrap */
+}
+
+.estado-gris {
+    background-color: #6c757d;
+}

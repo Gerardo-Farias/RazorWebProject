@@ -10,7 +10,7 @@
 
 <div class="mb-3">
     <label>Año:</label>
-    <input type="number" class="form-control" @bind="anio" min="1" />
+    <input type="number" class="form-control" @bind="año" min="1" />
 </div>
 
 <button class="btn btn-primary" @onclick="CalcularDias">
@@ -26,12 +26,12 @@
 
 @code {
     private int mes;
-    private int anio;
+    private int año;
     private string resultado = "";
 
     private void CalcularDias()
     {
-        if (mes < 1 || mes > 12 || anio <= 0)
+        if (mes < 1 || mes > 12 || año <= 0)
         {
             resultado = "Pon bien el mes valesito, nada más hay doce, no pongas ni cero ni nada raro vale";
             return;
@@ -41,7 +41,7 @@
 
         if (mes == 2)
         {
-            dias = EsBisiesto(anio) ? 29 : 28;
+            dias = EsBisiesto(año) ? 29 : 28;
         }
         else if (mes == 4 || mes == 6 || mes == 9 || mes == 11)
         {
@@ -52,7 +52,7 @@
             dias = 31;
         }
 
-        resultado = $"El mes {mes} del año {anio} tiene {dias} días.";
+        resultado = $"El mes {mes} del año {año} tiene {dias} días.";
     }
 
     private bool EsBisiesto(int year)

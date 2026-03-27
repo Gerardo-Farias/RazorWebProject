@@ -1,0 +1,62 @@
+﻿@page "/monthcount"
+@rendermode InteractiveServer
+
+<h3>Calcular días del mes</h3>
+
+<div class="mb-3">
+    <label>Mes:</label>
+    <input type="number" class="form-control" @bind="mes" min="1" max="12" />
+</div>
+
+<div class="mb-3">
+    <label>Año:</label>
+    <input type="number" class="form-control" @bind="anio" min="1" />
+</div>
+
+<button class="btn btn-primary" @onclick="CalcularDias">
+    Calcular
+</button>
+
+@if (!string.IsNullOrEmpty(resultado))
+{
+    <div class="alert alert-info mt-3">
+        @resultado
+    </div>
+}
+
+@code {
+    private int mes;
+    private int anio;
+    private string resultado = "";
+
+    private void CalcularDias()
+    {
+        if (mes < 1 || mes > 12 || anio <= 0)
+        {
+            resultado = "Pon bien el mes valesito, nada más hay doce, no pongas ni cero ni nada raro vale";
+            return;
+        }
+
+        int dias;
+
+        if (mes == 2)
+        {
+            dias = EsBisiesto(anio) ? 29 : 28;
+        }
+        else if (mes == 4 || mes == 6 || mes == 9 || mes == 11)
+        {
+            dias = 30;
+        }
+        else
+        {
+            dias = 31;
+        }
+
+        resultado = $"El mes {mes} del año {anio} tiene {dias} días.";
+    }
+
+    private bool EsBisiesto(int year)
+    {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
+}

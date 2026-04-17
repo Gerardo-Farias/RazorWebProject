@@ -1,0 +1,65 @@
+﻿@page "/todolist"
+@rendermode InteractiveServer
+
+<h3>Lista de actividades</h3>
+
+<div class="mb-3">
+    <label>Actividad</label>
+    <input class="form-control" @bind="nuevaActividad" @bind:event="oninput" @onkeydown="HandleKey" placeholder="Escribe una actividad aquí..." />
+</div>
+
+<button class="btn btn-primary mb-4" @onclick="AgregarActividad">
+    Agregar
+</button>
+
+<h4>Actividades por realizar (o pendientes, según se prefiera)</h4>
+
+@if (tareas.Count == 0)
+{
+    <div class="text-muted">No hay actividades registradas.</div>
+}
+else
+{
+    @foreach (var tarea in tareas)
+    {
+        <div class="d-flex justify-content-between align-items-center form-control mb-2">
+            <span>@tarea.Nombre</span>
+            <button class="btn btn-danger btn-sm" @onclick="() => EliminarActividad(tarea)">
+                Eliminar
+            </button>
+        </div>
+    }
+}
+
+@code {
+    private string nuevaActividad = "";
+
+    private List<Tarea> tareas = new();
+
+    private void AgregarActividad()
+    {
+        if (!string.IsNullOrWhiteSpace(nuevaActividad))
+        {
+            tareas.Add(new Tarea { Nombre = nuevaActividad });
+            nuevaActividad = ""; // limpia input
+        }
+    }
+
+    private void EliminarActividad(Tarea tarea)
+    {
+        tareas.Remove(tarea);
+    }
+
+    class Tarea
+    {
+        public string Nombre { get; set; }
+    }
+
+    private void HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            AgregarActividad();
+        }
+    }
+}

@@ -1,0 +1,192 @@
+﻿@page "/songlist"
+@rendermode InteractiveServer
+
+<h3>Lista de canciones</h3>
+
+<!-- INPUT -->
+<input class="form-control"
+       @bind="nuevoTitulo"
+       @bind:event="oninput"
+       @onkeydown="HandleKeyAgregar"
+       placeholder="Escribe una canción aquí..." />
+
+<button class="btn btn-primary mb-3" @onclick="Agregar">
+    Agregar
+</button>
+
+<!-- FILTRO -->
+<div class="mb-3 d-flex align-items-center">
+
+    <input class="form-control me-2"
+           @bind="filtro"
+           @bind:event="oninput"
+           @onkeydown="HandleKeyFiltro"
+           placeholder="Filtrar (ej: summer)" />
+
+    @if (!string.IsNullOrWhiteSpace(filtro))
+    {
+        <button class="btn btn-outline-secondary"
+                @onclick="LimpiarFiltro">
+            <span class="bi bi-x"></span>
+        </button>
+    }
+
+</div>
+
+<!-- ORDEN -->
+<div class="mb-3">
+    <button class="btn btn-secondary me-2" @onclick="OrdenAsc">
+        A-Z
+    </button>
+    <button class="btn btn-secondary" @onclick="OrdenDesc">
+        Z-A
+    </button>
+</div>
+
+<h4>Títulos</h4>
+
+@if (ListaFiltrada.Count == 0)
+{
+    <div class="text-muted">No hay títulos.</div>
+}
+else
+{
+    @foreach (var item in ListaFiltrada)
+    {
+        <div class="d-flex justify-content-between align-items-center form-control mb-2">
+
+            @if (editando == item)
+            {
+                <input class="form-control me-2"
+                       @bind="tituloEditando"
+                       @bind:event="oninput" />
+
+                <button class="btn btn-success btn-sm me-2"
+                        @onclick="GuardarEdicion">
+                    Guardar
+                </button>
+
+                <button class="btn btn-secondary btn-sm"
+                        @onclick="CancelarEdicion">
+                    Cancelar
+                </button>
+            }
+            else
+            {
+                <span>@item</span>
+
+                <div>
+                    <button class="btn btn-warning btn-sm me-2"
+                            @onclick="() => Editar(item)">
+                        Editar
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                            @onclick="() => Eliminar(item)">
+                        Eliminar
+                    </button>
+                </div>
+            }
+
+        </div>
+    }
+}
+
+@code {
+    private string nuevoTitulo = "";
+    private string filtro = "";
+
+    private List<string> canciones = new();
+
+    // edición
+    private string? editando = null;
+    private string tituloEditando = "";
+
+    // ========================
+    // MÉTODOS
+    // ========================
+
+    private void Agregar()
+    {
+        if (!string.IsNullOrWhiteSpace(nuevoTitulo))
+        {
+            canciones.Add(nuevoTitulo);
+            nuevoTitulo = "";
+        }
+    }
+
+    private void Eliminar(string item)
+    {
+        canciones.Remove(item);
+    }
+
+    private void Editar(string item)
+    {
+        editando = item;
+        tituloEditando = item;
+    }
+
+    private void GuardarEdicion()
+    {
+        if (editando != null)
+        {
+            int index = canciones.IndexOf(editando);
+            if (index != -1)
+            {
+                canciones[index] = tituloEditando;
+            }
+        }
+
+        editando = null;
+        tituloEditando = "";
+    }
+
+    private void CancelarEdicion()
+    {
+        editando = null;
+        tituloEditando = "";
+    }
+
+    private void OrdenAsc()
+    {
+        canciones = canciones.OrderBy(x => x).ToList();
+    }
+
+    private void OrdenDesc()
+    {
+        canciones = canciones.OrderByDescending(x => x).ToList();
+    }
+
+    // ========================
+    // FILTRO
+    // ========================
+
+    private List<string> ListaFiltrada =>
+        string.IsNullOrWhiteSpace(filtro)
+        ? canciones
+        : canciones
+            .Where(x => x.Contains(filtro, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+    private void HandleKeyAgregar(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Agregar();
+        }
+    }
+
+    private void HandleKeyFiltro(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            // let's hope this thing works lmao
+        }
+    }
+
+    private void LimpiarFiltro() 
+    {
+        filtro = ""; 
+    }
+
+}

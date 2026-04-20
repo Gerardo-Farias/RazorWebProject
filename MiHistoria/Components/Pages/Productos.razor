@@ -2,24 +2,22 @@
 @rendermode InteractiveServer
 
 <h3>
-    <span class="bi bi-box-seam icon"></span>
-    Productos
+    Gestión de Productos
 </h3>
 
-<!-- FORMULARIO SIEMPRE VISIBLE -->
 <div class="mb-3">
-    <label>No. Inventario:</label>
-    <input type="number" class="form-control" @bind="inventario" />
+    <label>ID Inventario:</label>
+    <input type="number" class="form-control" @bind="idInventario" />
 </div>
 
 <div class="mb-3">
-    <label>Nombre:</label>
-    <input class="form-control" @bind="nombre" maxlength="200" />
+    <label>Nombre del producto:</label>
+    <input class="form-control" @bind="nombreProducto" maxlength="200" />
 </div>
 
 <div class="mb-3">
-    <label>Departamento:</label>
-    <select class="form-control" @bind="departamento">
+    <label>Categoría:</label>
+    <select class="form-control" @bind="categoria">
         <option value="">Selecciona</option>
         <option>Frutas</option>
         <option>Verduras</option>
@@ -27,53 +25,53 @@
     </select>
 </div>
 
-@if (!modoEdicion)
+<div class="mb-3">
+    @if (!editando)
+    {
+        <button class="btn btn-primary" @onclick="AgregarProducto">Agregar</button>
+    }
+    else
+    {
+        <button class="btn btn-success me-2" @onclick="GuardarCambios">Guardar cambios</button>
+        <button class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+    }
+
+    <button class="btn btn-info ms-2" @onclick="MostrarResumen">Existencias</button>
+    <button class="btn btn-dark ms-2" @onclick="MostrarLista">Listado</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(mensajeError))
 {
-    <button class="btn btn-primary" @onclick="Guardar">Guardar</button>
-}
-else
-{
-    <button class="btn btn-success me-2" @onclick="Actualizar">Actualizar</button>
-    <button class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    <p class="text-danger">@mensajeError</p>
 }
 
-<button class="btn btn-info ms-2" @onclick="VerExistencias">Existencias</button>
-<button class="btn btn-secondary ms-2" @onclick="VolverListado">Listado</button>
-
-@if (!string.IsNullOrEmpty(error))
+@if (vistaActual == Vista.Lista)
 {
-    <p class="text-danger mt-2">@error</p>
-}
-
-<!-- CONTENIDO DINÁMICO -->
-@if (!vistaExistencias)
-{
-    <!-- LISTADO -->
-    @if (productos.Count > 0)
+    @if (listaProductos.Any())
     {
         <table class="table mt-4">
             <thead>
                 <tr>
-                    <th>Inventario</th>
+                    <th>ID</th>
                     <th>Nombre</th>
-                    <th>Departamento</th>
-                    <th>Acciones</th>
+                    <th>Categoría</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var p in productos)
+                @foreach (var item in listaProductos)
                 {
                     <tr>
-                        <td>@p.Inventario</td>
-                        <td>@p.Nombre</td>
-                        <td>@p.Departamento</td>
+                        <td>@item.Id</td>
+                        <td>@item.Nombre</td>
+                        <td>@item.Categoria</td>
                         <td>
                             <button class="btn btn-warning btn-sm me-1"
-                                    @onclick="() => Editar(p)">
+                                    @onclick="() => IniciarEdicion(item)">
                                 Editar
                             </button>
                             <button class="btn btn-danger btn-sm"
-                                    @onclick="() => Eliminar(p)">
+                                    @onclick="() => BorrarProducto(item)">
                                 Eliminar
                             </button>
                         </td>
@@ -83,132 +81,136 @@ else
         </table>
     }
 }
-else
+else if (vistaActual == Vista.Resumen)
 {
-    <!-- EXISTENCIAS -->
-    <h5 class="mt-4">Existencias por Departamento</h5>
-
+    <h5 class="mt-4">Resumen por categoría</h5>
     <ul>
-        <li>Frutas: @Contar("Frutas")</li>
-        <li>Verduras: @Contar("Verduras")</li>
-        <li>Lácteos: @Contar("Lácteos")</li>
+        <li>Frutas: @ContarPorCategoria("Frutas")</li>
+        <li>Verduras: @ContarPorCategoria("Verduras")</li>
+        <li>Lácteos: @ContarPorCategoria("Lácteos")</li>
     </ul>
 }
 
 @code {
-    int inventario;
-    string nombre = "";
-    string departamento = "";
-    string error = "";
 
-    bool modoEdicion = false;
-    bool vistaExistencias = false;
+    int idInventario;
+    string nombreProducto = string.Empty;
+    string categoria = string.Empty;
+    string mensajeError = string.Empty;
 
-    Producto productoEditando;
+    bool editando = false;
+    Producto? productoActual;
 
-    List<Producto> productos = new();
+    List<Producto> listaProductos = new();
 
-    void Guardar()
+    Vista vistaActual = Vista.Lista;
+
+    enum Vista
     {
-        error = "";
+        Lista,
+        Resumen
+    }
 
-        if (inventario <= 0 || string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(departamento))
+    void AgregarProducto()
+    {
+        if (!ValidarDatos()) return;
+
+        if (ExisteIdDuplicado(idInventario))
         {
-            error = "Datos inválidos";
+            mensajeError = "ID ya registrado";
             return;
         }
 
-        if (productos.Any(p => p.Inventario == inventario))
+        listaProductos.Add(new Producto
         {
-            error = "El número de inventario ya existe";
-            return;
-        }
-
-        productos.Add(new Producto
-        {
-            Inventario = inventario,
-            Nombre = nombre,
-            Departamento = departamento
+            Id = idInventario,
+            Nombre = nombreProducto,
+            Categoria = categoria
         });
 
-        Limpiar();
+        ResetFormulario();
     }
 
-    void Eliminar(Producto p)
+    void BorrarProducto(Producto prod)
     {
-        productos.Remove(p);
+        listaProductos.Remove(prod);
     }
 
-    void Editar(Producto p)
+    void IniciarEdicion(Producto prod)
     {
-        modoEdicion = true;
-        productoEditando = p;
+        editando = true;
+        productoActual = prod;
 
-        inventario = p.Inventario;
-        nombre = p.Nombre;
-        departamento = p.Departamento;
+        idInventario = prod.Id;
+        nombreProducto = prod.Nombre;
+        categoria = prod.Categoria;
     }
 
-    void Actualizar()
+    void GuardarCambios()
     {
-        error = "";
+        if (!ValidarDatos()) return;
 
-        if (inventario <= 0 || string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(departamento))
+        if (ExisteIdDuplicado(idInventario, productoActual))
         {
-            error = "Datos inválidos";
+            mensajeError = "ID duplicado";
             return;
         }
 
-        if (productos.Any(p => p.Inventario == inventario && p != productoEditando))
+        productoActual!.Id = idInventario;
+        productoActual.Nombre = nombreProducto;
+        productoActual.Categoria = categoria;
+
+        CancelarEdicion();
+    }
+
+    void CancelarEdicion()
+    {
+        editando = false;
+        productoActual = null;
+        ResetFormulario();
+    }
+
+    void MostrarResumen() => vistaActual = Vista.Resumen;
+
+    void MostrarLista() => vistaActual = Vista.Lista;
+
+    bool ValidarDatos()
+    {
+        mensajeError = "";
+
+        if (idInventario <= 0 ||
+            string.IsNullOrWhiteSpace(nombreProducto) ||
+            string.IsNullOrWhiteSpace(categoria))
         {
-            error = "El número de inventario ya existe";
-            return;
+            mensajeError = "Campos inválidos";
+            return false;
         }
 
-        productoEditando.Inventario = inventario;
-        productoEditando.Nombre = nombre;
-        productoEditando.Departamento = departamento;
-
-        modoEdicion = false;
-        productoEditando = null;
-
-        Limpiar();
+        return true;
     }
 
-    void Cancelar()
+    bool ExisteIdDuplicado(int id, Producto? ignorar = null)
     {
-        modoEdicion = false;
-        productoEditando = null;
-        Limpiar();
+        return listaProductos.Any(p => p.Id == id && p != ignorar);
     }
 
-    void VerExistencias()
+    int ContarPorCategoria(string cat)
     {
-        vistaExistencias = true;
+        return listaProductos.Count(p => p.Categoria == cat);
     }
 
-    void VolverListado()
+    void ResetFormulario()
     {
-        vistaExistencias = false;
-    }
-
-    int Contar(string dep)
-    {
-        return productos.Count(p => p.Departamento == dep);
-    }
-
-    void Limpiar()
-    {
-        inventario = 0;
-        nombre = "";
-        departamento = "";
-        error = "";
+        idInventario = 0;
+        nombreProducto = "";
+        categoria = "";
+        mensajeError = "";
     }
 
     class Producto
     {
-        public int Inventario { get; set; }
-        public string Nombre { get; set; }
-        public string Departamento { get; set; }
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Categoria { get; set; } = "";
     }
 }

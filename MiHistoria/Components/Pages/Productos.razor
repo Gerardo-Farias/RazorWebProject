@@ -36,8 +36,15 @@
         <button class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
     }
 
-    <button class="btn btn-info ms-2" @onclick="MostrarResumen">Existencias</button>
-    <button class="btn btn-dark ms-2" @onclick="MostrarLista">Listado</button>
+    <button class="btn ms-2 @(vistaActual == Vista.Resumen ? "btn-light text-dark" : "btn-primary")"
+            @onclick="MostrarResumen">
+        Existencias
+    </button>
+
+    <button class="btn ms-2 @(vistaActual == Vista.Lista ? "btn-light text-dark" : "btn-primary")"
+            @onclick="MostrarLista">
+        Listado
+    </button>
 </div>
 
 @if (!string.IsNullOrWhiteSpace(mensajeError))

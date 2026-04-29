@@ -96,3 +96,16 @@ h1:focus {
 .estado-gris {
     background-color: #6c757d;
 }
+
+.custom-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

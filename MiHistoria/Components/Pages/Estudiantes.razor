@@ -1,0 +1,113 @@
+﻿@page "/estudiantes"
+@rendermode InteractiveServer
+
+<h3>Registro de Estudiantes</h3>
+
+<EditForm Model="@nuevoEstudiante"
+          OnValidSubmit="Guardar"
+          FormName="formEstudiantes">
+
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre</label>
+        <InputText class="form-control"
+                   placeholder="Introduce aquí el nombre del estudiante"
+                   @bind-Value="nuevoEstudiante.Nombre" />
+        <ValidationMessage For="@(() => nuevoEstudiante.Nombre)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Correo</label>
+        <InputText class="form-control"
+                   placeholder="Introduce aquí el correo del estudiante"
+                   @bind-Value="nuevoEstudiante.Correo" />
+        <ValidationMessage For="@(() => nuevoEstudiante.Correo)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Calificación</label>
+        <InputNumber class="form-control"
+                     @bind-Value="nuevoEstudiante.Calificacion"
+                     ParsingErrorMessage="La calificación debe ser un número válido" />
+
+        <ValidationMessage For="@(() => nuevoEstudiante.Calificacion)" />
+    </div>
+
+    <button class="btn btn-success" type="submit">
+        Guardar
+    </button>
+</EditForm>
+
+<hr />
+
+<h4>Lista de estudiantes</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Calificación</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var est in estudiantes)
+        {
+            <tr>
+                <td>@est.Nombre</td>
+                <td>@est.Correo</td>
+                <td>@est.Calificacion</td>
+                <td>
+                    <button class="btn btn-danger btn-sm"
+                            @onclick="() => Eliminar(est)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private Estudiante nuevoEstudiante = new();
+    private List<Estudiante> estudiantes = new();
+
+    private void Guardar()
+    {
+        estudiantes.Add(new Estudiante
+        {
+            Nombre = nuevoEstudiante.Nombre,
+            Correo = nuevoEstudiante.Correo,
+            Calificacion = nuevoEstudiante.Calificacion
+        });
+
+        nuevoEstudiante = new Estudiante();
+    }
+
+    private void Eliminar(Estudiante est)
+    {
+        estudiantes.Remove(est);
+    }
+
+    private string calificacionTexto
+    {
+        get => nuevoEstudiante.Calificacion?.ToString() ?? "";
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                nuevoEstudiante.Calificacion = null;
+            }
+            else if (double.TryParse(value, out var num))
+            {
+                nuevoEstudiante.Calificacion = num;
+            }
+            else
+            {
+                nuevoEstudiante.Calificacion = null;
+            }
+        }
+    }
+}
